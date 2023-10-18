@@ -101,6 +101,18 @@ function backupConfigmaps() {
   echo "|--- Finish backup configmaps!"
 }
 
+function backupCronjob() {
+  echo "|--- Starting backup cronjob"
+  rm -rf ./$backupFolder/$ns/cronjobs && mkdir -p ./$backupFolder/$ns/cronjobs
+  for cronjob in $(kubectl get cronjobs -n $ns --no-headers | cut -d " " -f1); do
+    if checkIgnoreCronjob $cronjob; then
+      kubectl get cronjobs $cronjob -n $ns -o yaml > ./$backupFolder/$ns/cronjobs/$cronjob.yaml
+      echo "|------ Save ./$backupFolder/$ns/cronjobs/$cronjob.yaml"
+    fi
+  done
+  echo "|--- Finish backup cronjobs!"
+}
+
 function backupNamespace() {
     echo "Starting backup namespace:[$ns] parts... "
     rm -rf $backupFolder/$ns && mkdir -p $backupFolder/$ns
@@ -112,6 +124,7 @@ function backupNamespace() {
 #    backupSecrets $ns
 #    backupReplicaSets $ns
 #    backupStatefulSets $ns
+    backupCronjobs $ns
     echo "Finish backup namespace:[$ns]!"
 }
 
